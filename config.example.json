@@ -1,0 +1,25 @@
+{
+  "AWS_ACCESS_KEY_ID": "",
+  "AWS_SECRET_ACCESS_KEY": "",
+  "AWS_DEFAULT_REGION": "",
+  "AWS_PROFILE": "",
+  "EC2_Instance_Ids": [
+    ""
+  ],
+  "Security_Group": {
+    "Id": "",
+    "Ping": true,
+    "RulesIN": [
+      {
+        "Protocol": "tcp",
+        "FromPort": 22,
+        "ToPort": 22
+      },
+      {
+        "Protocol": "tcp",
+        "FromPort": 2376,
+        "ToPort": 2376
+      }
+    ]
+  }
+}
