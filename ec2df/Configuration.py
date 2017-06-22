@@ -10,27 +10,18 @@ class Configuration:
         'region_name': None,
     }
 
-    def __init__(self, file_name='config.json'):
+    def __init__(self, c_path=None, c_obj=None):
         """
 
-        :param file_name:
+        :param c_path:
+        :param c_obj:
         """
-        c_dirs = (
-            os.getcwd(),
-            os.path.join(os.environ['HOME'], '.ec2df'),
-            '/etc'
-        )
-
-        for c_dir in c_dirs:
-            c_path = os.path.join(c_dir, file_name)
-            if os.path.isfile(c_path):
-                with open(c_path, mode='r', encoding='utf-8') as c_file:
-                    c_user_settings = json.load(c_file)
-                break
+        if c_obj:
+            c_user_settings = c_obj
         else:
-            raise FileNotFoundError('{0}: missing'.format(file_name))
+            c_user_settings = self.load_config(c_path)
 
-        # Optional
+        # Partially optional
         self.ec2_ids = c_user_settings.get('EC2_Instance_Ids', list())
         self.aws_keys = self._get_keys(c_user_settings)
 
@@ -38,6 +29,16 @@ class Configuration:
         self.group_id = c_user_settings['Security_Group']['Id']
         self.ping = c_user_settings['Security_Group']['Ping']
         self.rules = c_user_settings['Security_Group']['RulesIN']
+
+    @staticmethod
+    def load_config(c_path):
+        """
+
+        :param c_path:
+        :return:
+        """
+        with open(c_path, mode='r', encoding='utf-8') as cf:
+            return json.load(cf)
 
     def _get_keys(self, user_settings):
         """
@@ -69,3 +70,18 @@ class Configuration:
                     'AWS_DEFAULT_REGION'
                 ),
             }
+
+
+###############################################################################
+# Utilities
+def find_config(c_dirs, c_filename='config.json'):
+    """
+
+    :param c_dirs:
+    :param c_filename:
+    :return:
+    """
+    for cd in c_dirs:
+        cp = os.path.join(cd, c_filename)
+        if os.path.isfile(cp):
+            return cp

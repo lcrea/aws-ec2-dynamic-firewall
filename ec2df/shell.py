@@ -2,14 +2,19 @@ import boto3
 import click
 import os
 
-from .Configuration import Configuration
+from .Configuration import Configuration, find_config
 from .EC2Instances import EC2Instances
 from .SecurityRules import get_ip
 from .SecurityRules import SecurityRules
 
 
+CONFIG_DIRS = (
+    os.getcwd(),
+    os.path.join(os.environ['HOME'], '.ec2df'),
+    '/etc'
+)
 NAME = os.path.basename(os.path.dirname(__file__))
-VERSION = '0.1.0alpha1'
+VERSION = '0.1.0alpha2'
 
 
 ###############################################################################
@@ -25,7 +30,8 @@ VERSION = '0.1.0alpha1'
 def cli(ctx):
     if ctx.invoked_subcommand != 'myip':
         try:
-            user_config = Configuration()
+            c_file = find_config(CONFIG_DIRS)
+            user_config = Configuration(c_file)
         except FileNotFoundError as e:
             click.echo('ERROR -> {}'.format(e), err=True)
             exit(1)

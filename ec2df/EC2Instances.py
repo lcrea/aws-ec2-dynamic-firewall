@@ -68,7 +68,8 @@ class EC2Instances:
 
             # Remove the security group from those already existent.
             security_groups = self.get_security_groups(ec2)
-            security_groups.remove(group_id)
+            if group_id in security_groups:
+                security_groups.remove(group_id)
 
             r = ec2.modify_attribute(Groups=list(security_groups))
             res.append(r)
