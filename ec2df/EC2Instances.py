@@ -6,8 +6,6 @@ class EC2Instances:
         """
         self.instance_ids = list()
         self.resource = ec2_res
-        # self.resource = session_obj.resource('ec2')
-        # self.client = session_obj.client('ec2')
 
     @staticmethod
     def get_security_groups(instance):
@@ -46,32 +44,32 @@ class EC2Instances:
         for instance in self.instance_ids:
             ec2 = self.resource.Instance(instance)
 
-            # Add the security group to those already existent in the instance.
+            # Add the security group to those already existent in the instance
             security_groups = self.get_security_groups(ec2)
             security_groups.add(group_id)
 
             # Apply the changes
             r = ec2.modify_attribute(Groups=list(security_groups))
-            res.append(r)
-
+            res.append((r['ResponseMetadata']['RequestId'],
+                        r['ResponseMetadata']['HTTPStatusCode']))
         return res
 
     def revoke_rules(self, group_id):
         """
 
         :param group_id:
-        :return:
+        :return: list of tuples [('id_of_request', status_code)]
         """
         res = list()
         for instance in self.instance_ids:
             ec2 = self.resource.Instance(instance)
 
-            # Remove the security group from those already existent.
+            # Remove the security group from those already existent
             security_groups = self.get_security_groups(ec2)
             if group_id in security_groups:
                 security_groups.remove(group_id)
 
             r = ec2.modify_attribute(Groups=list(security_groups))
-            res.append(r)
-
+            res.append((r['ResponseMetadata']['RequestId'],
+                        r['ResponseMetadata']['HTTPStatusCode']))
         return res

@@ -1,17 +1,6 @@
 from urllib.request import urlopen
 
 
-def get_ip():
-    """Dynamically fetch current IP from the Amazon checker
-
-    :return: external IP in CIDR notation (X.X.X.X/32)
-    :rtype: str
-    """
-    with urlopen('http://checkip.amazonaws.com/') as req:
-        res = req.read().decode('utf-8').rstrip()
-    return '{}/32'.format(res)
-
-
 class SecurityRules:
     def __init__(self, ec2_res, config):
         """Basic methods to interact with AWS rules through API
@@ -42,6 +31,8 @@ class SecurityRules:
 
         # Final generated rule set, ready to be uploaded
         self.request_set = list()
+
+        self._test_request_set = False
 
     def generate(self):
         """Generates the rules based on the user configuration
@@ -82,24 +73,39 @@ class SecurityRules:
     def get_all(self):
         """Retrieves all the rule set from a specific security group
 
-        :return:
-        :rtype: dict
+        :return: a list of dict
+        :rtype: list
         """
         return self.resource.ip_permissions
 
     def clear_all(self):
         """
 
-        :return:
+        :return: a resulting response or an empty dict
+        :rtype: dict
         """
-        full_set = self.get_all()
+        full_set = self._test_request_set or self.get_all()
         if full_set:
             return self.resource.revoke_ingress(IpPermissions=full_set)
+        return dict()
 
     def apply(self):
         """
 
         :return:
         """
-        self.generate()
-        return self.resource.authorize_ingress(IpPermissions=self.request_set)
+        rule_set = self._test_request_set or self.request_set
+        return self.resource.authorize_ingress(IpPermissions=rule_set)
+
+
+###############################################################################
+# Utilities
+def get_ip():
+    """Dynamically fetch current IP from the Amazon checker
+
+    :return: external IP in CIDR notation (X.X.X.X/32)
+    :rtype: str
+    """
+    with urlopen('http://checkip.amazonaws.com/') as req:
+        res = req.read().decode('utf-8').rstrip()
+    return '{}/32'.format(res)
